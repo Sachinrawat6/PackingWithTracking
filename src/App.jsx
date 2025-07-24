@@ -1,0 +1,22 @@
+import React from 'react'
+import Navbar from './components/Navbar'
+import { BrowserRouter, Route, Router, Routes } from 'react-router-dom'
+import Homepage from './pages/Home'
+import PackingPage from './pages/PackingPage'
+import FetchOrders from './pages/FetchOrders'
+
+const App = () => {
+  return (
+   <BrowserRouter>
+   <Navbar/>
+  <Routes>
+    <Route path="/" element={<Homepage/>} />
+    <Route path="/packing" element={<PackingPage/>} />
+    <Route path="/orders" element={<FetchOrders/>} />
+    <Route path="/manifest" element={<div>Manifest Page</div>} />
+  </Routes>
+   </BrowserRouter>
+  )
+}
+
+export default App
