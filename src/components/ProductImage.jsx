@@ -57,7 +57,7 @@ const ProductImage = React.memo(({ style_code = [], onLoadComplete }) => {
 
     // Determine grid columns based on matched products count
     const gridClass = useMemo(() => {
-        return matchedProducts.length > 2 ? "grid-cols-3" : "grid-cols-1";
+        return matchedProducts.length > 1 ? "grid-cols-3" : "grid-cols-1";
     }, [matchedProducts.length]);
 
     return (

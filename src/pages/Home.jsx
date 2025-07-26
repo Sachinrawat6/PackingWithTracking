@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { Link } from "react-router-dom";
 const Home = () => {
   return (
     <div className="min-h-[90vh] bg-gradient-to-br from-gray-50 to-blue-100 flex items-center justify-center p-4">
@@ -12,15 +12,12 @@ const Home = () => {
             Streamline your fulfillment process with real-time order tracking and inventory management
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition duration-300 shadow-lg hover:shadow-xl">
+            <Link to="/orders" className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition duration-300 shadow-lg hover:shadow-xl">
               Get Started
-            </button>
-            <button className="px-8 py-3 border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-full transition duration-300">
-              Learn More
-            </button>
+            </Link>
           </div>
         </div>
-        
+
         <div className="bg-gray-50 p-6 border-t border-gray-200">
           <div className="flex flex-wrap justify-center gap-6 text-gray-500">
             <div className="flex items-center gap-2">
