@@ -31,7 +31,7 @@ const OrderFetcher = () => {
 
       // First request to trigger data fetch
       const fetchResponse = await fetch(
-        `http://localhost:3000/fetch-orders`,
+        `https://inventorybackend-m1z8.onrender.com/api/v1/oms/orders/fetch-orders`,
         {
           method: 'POST',
           headers: {
@@ -51,13 +51,14 @@ const OrderFetcher = () => {
       }
 
       // Second request to get the actual data
-      const ordersResponse = await fetch('http://localhost:3000/orders');
+      const ordersResponse = await fetch('https://inventorybackend-m1z8.onrender.com/api/v1/oms/orders/orders');
       if (!ordersResponse.ok) {
         throw new Error('Failed to fetch orders data');
       }
 
       const ordersData = await ordersResponse.json();
-      const newOrders = ordersData.orders || [];
+      const newOrders = ordersData.data || [];
+      console.log(newOrders)
 
       setOrders(prevOrders => forceRefresh ? newOrders : [...prevOrders, ...newOrders]);
 

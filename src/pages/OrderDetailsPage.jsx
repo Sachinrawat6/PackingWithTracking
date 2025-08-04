@@ -2,13 +2,32 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import ProductImage from '../components/ProductImage';
 import PackedDetails from './PackedDetails';
 
-const OrderDetailsPage = ({ trackingId, trackingRef }) => {
+const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [imagesLoading, setImagesLoading] = useState(true);
     const [localStorageData, setLocalStorageData] = useState([]);
     const [productsError, setProductsError] = useState(null);
+    const [currentTrackingId, setCurrentTrackingId] = useState(initialTrackingId);
+    const debounceTimer = useRef(null);
+
+    // Debounce tracking ID changes
+    useEffect(() => {
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
+        }
+
+        debounceTimer.current = setTimeout(() => {
+            setCurrentTrackingId(initialTrackingId);
+        }, 300); // 300ms delay for barcode scanner input
+
+        return () => {
+            if (debounceTimer.current) {
+                clearTimeout(debounceTimer.current);
+            }
+        };
+    }, [initialTrackingId]);
 
     const saveToLocalStorage = useCallback((newOrderData) => {
         try {
@@ -52,7 +71,7 @@ const OrderDetailsPage = ({ trackingId, trackingRef }) => {
         }
     }, []);
 
-    const fetchOrderDetails = useCallback(async () => {
+    const fetchOrderDetails = useCallback(async (trackingId) => {
         if (!trackingId) {
             setOrder(null);
             return;
@@ -64,34 +83,62 @@ const OrderDetailsPage = ({ trackingId, trackingRef }) => {
             setImagesLoading(true);
             setProductsError(null);
 
-            const response = await fetch(`http://localhost:3000/orders/tracking/${trackingId}`);
+            // Clean the tracking ID
+            const cleanedTrackingId = trackingId
+                .replace(/[\n\r]/g, '') // Remove Enter key presses
+                .replace(/[\u0000-\u001F]/g, '') // Remove ASCII control chars
+                .trim();
+
+            const response = await fetch(
+                `https://inventorybackend-m1z8.onrender.com/api/v1/oms/orders/tracking/${encodeURIComponent(cleanedTrackingId)}`
+            );
+
             if (!response.ok) {
-                throw new Error(`Failed to fetch order: ${response.status}`);
+                const confirm = window.confirm("Are you sure want to add this in manifest")
+                if (!confirm) {
+                    trackingRef.current.focus();
+                    trackingRef.current.select();
+                    throw new Error(`Server error: HTTP ${response.status}`);
+
+                } else {
+                    saveToLocalStorage({
+                        tracking_id: trackingId,
+                        sku_code: {},
+                        qty: {},
+                        timestamp: Date.now().toLocaleString()
+                    })
+                    trackingRef.current.focus();
+                    trackingRef.current.select();
+                    throw new Error(`Server error: HTTP ${response.status}`);
+                }
+
             }
 
             const data = await response.json();
-            if (!data.success || !data.order) {
-                throw new Error('Order not found');
+
+            if (!data.success || !data.data) {
+                throw new Error("Order not found");
             }
 
-            setOrder(data.order);
-            saveToLocalStorage(data.order);
+            setOrder(data.data);
+            saveToLocalStorage(data.data);
 
+            // Auto-select input for next scan
             if (trackingRef.current) {
                 trackingRef.current.focus();
                 trackingRef.current.select();
             }
         } catch (err) {
-            setError(err.message);
+            setError(err.message || "Failed to fetch order. Try again.");
             setOrder(null);
         } finally {
             setLoading(false);
         }
-    }, [trackingId, trackingRef, saveToLocalStorage]);
+    }, [saveToLocalStorage, trackingRef]);
 
     useEffect(() => {
-        fetchOrderDetails();
-    }, [fetchOrderDetails]);
+        fetchOrderDetails(currentTrackingId);
+    }, [currentTrackingId, fetchOrderDetails]);
 
     const styleCodes = useMemo(() => {
         return order?.order_items?.map(item =>
@@ -124,7 +171,6 @@ const OrderDetailsPage = ({ trackingId, trackingRef }) => {
         }
     }, []);
 
-
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -153,7 +199,7 @@ const OrderDetailsPage = ({ trackingId, trackingRef }) => {
         );
     }
 
-    if (!order && !trackingId) {
+    if (!order && !currentTrackingId) {
         return (
             <>
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 my-4 rounded">
@@ -191,7 +237,6 @@ const OrderDetailsPage = ({ trackingId, trackingRef }) => {
                                         <p className="text-sm text-gray-500">Tracking ID</p>
                                         <p className="font-medium text-blue-600">{order.shipment_tracker || 'N/A'}</p>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -251,7 +296,7 @@ const OrderDetailsPage = ({ trackingId, trackingRef }) => {
                     />
                 </div>
             </div>
-            <PackedDetails trackingId={trackingId} />
+            <PackedDetails trackingId={currentTrackingId} />
         </div>
     );
 };
