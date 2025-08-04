@@ -70,7 +70,6 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
             console.error("Error saving to localStorage:", error);
         }
     }, []);
-
     const fetchOrderDetails = useCallback(async (trackingId) => {
         if (!trackingId) {
             setOrder(null);
@@ -84,54 +83,64 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
             setProductsError(null);
 
             // Clean the tracking ID
-            const cleanedTrackingId = trackingId
-                .replace(/[\n\r]/g, '') // Remove Enter key presses
-                .replace(/[\u0000-\u001F]/g, '') // Remove ASCII control chars
+            let cleanedTrackingId = trackingId
+                .replace(/[\n\r]/g, '')
+                .replace(/[\u0000-\u001F]/g, '')
                 .trim();
+            cleanedTrackingId = trackingId
 
             const response = await fetch(
-                `https://inventorybackend-m1z8.onrender.com/api/v1/oms/orders/tracking/${encodeURIComponent(cleanedTrackingId)}`
+                `https://inventorybackend-m1z8.onrender.com/api/v1/oms/orders/shipment_tracker/${cleanedTrackingId}`
             );
 
             if (!response.ok) {
-                const confirm = window.confirm("Are you sure want to add this in manifest")
-                if (!confirm) {
-                    trackingRef.current.focus();
-                    trackingRef.current.select();
-                    throw new Error(`Server error: HTTP ${response.status}`);
+                const shouldSave = window.confirm("Order not found. Do you want to add this tracking ID to the manifest?");
 
-                } else {
-                    saveToLocalStorage({
-                        tracking_id: trackingId,
-                        sku_code: {},
-                        qty: {},
-                        timestamp: Date.now().toLocaleString()
-                    })
-                    trackingRef.current.focus();
-                    trackingRef.current.select();
-                    throw new Error(`Server error: HTTP ${response.status}`);
+                if (shouldSave) {
+                    const dummyOrder = {
+                        shipment_tracker: cleanedTrackingId,
+                        order_items: [],
+                        timestamp: Date.now()
+                    };
+                    saveToLocalStorage(dummyOrder);
+                    setOrder(dummyOrder);
                 }
 
+                throw new Error(`Order not found: ${cleanedTrackingId}`);
             }
 
             const data = await response.json();
 
             if (!data.success || !data.data) {
-                throw new Error("Order not found");
+                const shouldSave = window.confirm("Order data incomplete. Do you want to add this tracking ID to the manifest?");
+
+                if (shouldSave) {
+                    const dummyOrder = {
+                        shipment_tracker: cleanedTrackingId,
+                        order_items: [],
+                        timestamp: Date.now()
+                    };
+                    saveToLocalStorage(dummyOrder);
+                    setOrder(dummyOrder);
+                }
+
+                throw new Error("Order data incomplete");
             }
 
+            // Successful case
             setOrder(data.data);
             saveToLocalStorage(data.data);
 
-            // Auto-select input for next scan
+        } catch (err) {
+            setError(err.message);
+            if (!order) {
+                setOrder(null);
+            }
+        } finally {
             if (trackingRef.current) {
                 trackingRef.current.focus();
                 trackingRef.current.select();
             }
-        } catch (err) {
-            setError(err.message || "Failed to fetch order. Try again.");
-            setOrder(null);
-        } finally {
             setLoading(false);
         }
     }, [saveToLocalStorage, trackingRef]);
@@ -140,10 +149,14 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
         fetchOrderDetails(currentTrackingId);
     }, [currentTrackingId, fetchOrderDetails]);
 
+    // const styleCodes = useMemo(() => {
+    //     return order?.order_items?.map(item =>
+    //         Number(item.sku_code?.split("-")[0])
+    //     ) || [];
+    // }, [order]);
+
     const styleCodes = useMemo(() => {
-        return order?.order_items?.map(item =>
-            Number(item.sku_code?.split("-")[0])
-        ) || [];
+        return [Number(order?.product_sku_code.split("-")[0])] || [];
     }, [order]);
 
     const formatDate = useCallback((timestamp) => {
@@ -244,7 +257,7 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
 
                     <div className="mb-6">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">
-                            Order Items <span className="text-gray-500">({order.order_items?.length || 0})</span>
+                            Order Items <span className="text-gray-500">({order?.length || 1})</span>
                         </h3>
 
                         <div className="overflow-hidden border border-gray-200 rounded-lg">
@@ -256,7 +269,7 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {order.order_items?.map((item, index) => (
+                                    {/* {order?.map((item, index) => (
                                         <tr key={index} className="hover:bg-gray-50">
                                             <td className="px-6 py-4">
                                                 <div className="font-medium text-gray-900">
@@ -265,7 +278,8 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                                             </td>
                                             <td className="px-6 py-4 text-gray-900 text-xl">{item.qty || '0'}</td>
                                         </tr>
-                                    ))}
+                                    ))} */}
+                                    {order.product_sku_code}
                                 </tbody>
                             </table>
                         </div>
