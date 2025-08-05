@@ -213,15 +213,16 @@ const Manifest = () => {
         doc.setFontSize(16);
         doc.text(title, 14, 20);
 
-        // courier mapping 
+
+
         const courierMapping = {
-            bluedart: ['77'],
-            delhivery: ['284', '345', '2379', '195'],
-            shadowfax: ['SF'],
-            xpressbees: ['1411', '1413', '136'],
+            bluedart: ['BD_CP', 'BLUEDART'],
+            delhivery: ['DELHIVERY', 'Delhivery', 'DelhiverySurface', 'Nykaa Fashion', 'Nykaa Fashion Exchange Reverse'],
+            shadowfax: ['SF', "Shadowfax"],
+            xpressbees: ['XC', 'XPRESSBEES'],
             ecom: ['725'],
             dtdc: ['7X'],
-            ekart: ['CLQ', 'CLS'],
+            ekart: ['EK_CP'],
             shipdelight: [],
         };
 
@@ -236,9 +237,10 @@ const Manifest = () => {
         const tableData = manifest
             .filter((o) => {
                 if (!o.tracking_id) return false;
-                const trackingStr = o.tracking_id.toString();
-                return prefixes.some(prefix => trackingStr.startsWith(prefix));
+                const orderCourier = o.courrier?.toString().toLowerCase(); // lowercase
+                return prefixes.some(prefix => orderCourier?.startsWith(prefix?.toLowerCase()));
             })
+
             .map((item, index) => [
                 index + 1,
                 item.tracking_id || 'N/A',
@@ -376,6 +378,9 @@ const Manifest = () => {
                                     SKUs & Quantities
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Courrier
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Total Items
                                 </th>
                             </tr>
@@ -397,6 +402,9 @@ const Manifest = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             {renderSKUs(order.sku_codes, order.qty)}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {order?.courrier}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {Object.values(order.qty || {}).reduce((sum, qty) => sum + (parseInt(qty) || 0), 0)}

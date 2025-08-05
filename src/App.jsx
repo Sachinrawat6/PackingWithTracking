@@ -6,6 +6,7 @@ import PackingPage from './pages/PackingPage'
 import FetchOrders from './pages/FetchOrders'
 import Manifest from './pages/Manifest'
 import UploadOrders from './pages/UploadOrders'
+import Orders from './pages/Orders'
 
 const App = () => {
   return (
@@ -14,7 +15,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Homepage />} />
         <Route path="/packing" element={<PackingPage />} />
-        <Route path="/orders" element={<FetchOrders />} />
+        <Route path="/orders" element={<Orders />} />
         <Route path="/manifest" element={<Manifest />} />
         <Route path='/upload' element={<UploadOrders />} />
       </Routes>

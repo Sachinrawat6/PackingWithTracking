@@ -19,6 +19,7 @@ const saveManifestToNocoDb = async (data) => {
         tracking_id: data.shipment_tracker || "dummy",
         sku_codes,
         qty,
+        courrier: data?.courrier,
         timestamp: new Date(data.timestamp).toISOString() || new Date().toISOString()
     };
 

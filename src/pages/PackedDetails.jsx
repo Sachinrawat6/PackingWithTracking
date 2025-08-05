@@ -86,7 +86,7 @@ const PackedDetails = () => {
                     className={`py-2 px-4 rounded-md duration-75 ease-in text-white 
         ${!orders || !Array.isArray(orders) || orders.length === 0
                             ? 'bg-gray-300 cursor-not-allowed'
-                            : 'bg-blue-400 hover:bg-blue-500 cursor-pointer'}`}
+                            : 'bg-black hover:scale-[.9] duration-75 ease-in cursor-pointer'}`}
                 >
                     Save Manifest
                 </button>
@@ -100,6 +100,7 @@ const PackedDetails = () => {
                             <th className="py-3 px-6">Tracking ID</th>
                             <th className="py-3 px-6">SKU Codes</th>
                             <th className="py-3 px-6">Quantities</th>
+                            <th className="py-3 px-6">Courrier</th>
                             <th className="py-3 px-6">Timestamp</th>
                         </tr>
                     </thead>
@@ -124,6 +125,7 @@ const PackedDetails = () => {
                                         <td className="py-3 px-6 font-medium text-gray-700">{order.shipment_tracker}</td>
                                         <td className="py-3 px-6 text-gray-600">{skuCodes}</td>
                                         <td className="py-3 px-6 text-gray-600">{quantities}</td>
+                                        <td className="py-3 px-6 font-medium text-gray-700">{order?.courrier}</td>
                                         <td className="py-3 px-6 text-gray-600">{formattedTime}</td>
                                     </tr>
                                 );

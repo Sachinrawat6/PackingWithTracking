@@ -33,6 +33,12 @@ const Navbar = () => {
               Packing
             </Link>
             <Link
+              to="/orders"
+              className="text-white hover:bg-red-600 px-4 py-2 rounded-md transition-all duration-300 font-medium"
+            >
+              Orders
+            </Link>
+            <Link
               to="/manifest"
               className="text-white hover:bg-red-600 px-4 py-2 rounded-md transition-all duration-300 font-medium"
             >
@@ -74,6 +80,12 @@ const Navbar = () => {
             onClick={() => setOpen(false)}
           >
             Packing
+          </Link>
+          <Link
+            to="/orders"
+            className="text-white hover:bg-red-600 px-4 py-2 rounded-md transition-all duration-300 font-medium"
+          >
+            Orders
           </Link>
           <Link
             to="/manifest"

@@ -45,9 +45,10 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
             }
 
             const minimalOrderData = {
-                shipment_tracker: newOrderData.shipment_tracker,
-                order_items: newOrderData.order_items?.map(item => ({
-                    sku_code: item.sku_code,
+                shipment_tracker: newOrderData[0]?.shipment_tracker,
+                courrier: newOrderData[0]?.shipping_company,
+                order_items: newOrderData.length > 0 && newOrderData?.map(item => ({
+                    sku_code: item.product_sku_code,
                     qty: item.qty
                 })) || [],
                 timestamp: Date.now()
@@ -56,7 +57,7 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
             setLocalStorageData(minimalOrderData);
 
             const existingIndex = existingOrders.findIndex(
-                order => order && order.shipment_tracker === newOrderData.shipment_tracker
+                order => order && order.shipment_tracker === newOrderData[0]?.shipment_tracker
             );
 
             if (existingIndex >= 0) {
@@ -70,6 +71,8 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
             console.error("Error saving to localStorage:", error);
         }
     }, []);
+
+
     const fetchOrderDetails = useCallback(async (trackingId) => {
         if (!trackingId) {
             setOrder(null);
@@ -92,24 +95,26 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
             const response = await fetch(
                 `https://inventorybackend-m1z8.onrender.com/api/v1/oms/orders/shipment_tracker/${cleanedTrackingId}`
             );
-
-            if (!response.ok) {
+            const data = await response.json();
+            if (!response.ok || data.data.length === 0) {
                 const shouldSave = window.confirm("Order not found. Do you want to add this tracking ID to the manifest?");
 
                 if (shouldSave) {
                     const dummyOrder = {
                         shipment_tracker: cleanedTrackingId,
+                        courrier: "NA",
                         order_items: [],
                         timestamp: Date.now()
                     };
-                    saveToLocalStorage(dummyOrder);
+                    saveToLocalStorage([dummyOrder]);
                     setOrder(dummyOrder);
                 }
 
                 throw new Error(`Order not found: ${cleanedTrackingId}`);
             }
 
-            const data = await response.json();
+
+
 
             if (!data.success || !data.data) {
                 const shouldSave = window.confirm("Order data incomplete. Do you want to add this tracking ID to the manifest?");
@@ -117,10 +122,11 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                 if (shouldSave) {
                     const dummyOrder = {
                         shipment_tracker: cleanedTrackingId,
+                        courrier: "NA",
                         order_items: [],
                         timestamp: Date.now()
                     };
-                    saveToLocalStorage(dummyOrder);
+                    saveToLocalStorage([dummyOrder]);
                     setOrder(dummyOrder);
                 }
 
@@ -145,19 +151,20 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
         }
     }, [saveToLocalStorage, trackingRef]);
 
+
     useEffect(() => {
         fetchOrderDetails(currentTrackingId);
     }, [currentTrackingId, fetchOrderDetails]);
 
-    // const styleCodes = useMemo(() => {
-    //     return order?.order_items?.map(item =>
-    //         Number(item.sku_code?.split("-")[0])
-    //     ) || [];
-    // }, [order]);
-
     const styleCodes = useMemo(() => {
-        return [Number(order?.product_sku_code.split("-")[0])] || [];
+        return order?.length > 0 && order?.map(item =>
+            Number(item.product_sku_code?.split("-")[0])
+        ) || [];
     }, [order]);
+
+    // const styleCodes = useMemo(() => {
+    //     return [Number(order?.product_sku_code.split("-")[0])] || [];
+    // }, [order]);
 
     const formatDate = useCallback((timestamp) => {
         if (!timestamp || timestamp === "0") return "N/A";
@@ -237,7 +244,7 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                     <div className="flex flex-col items-start mb-6">
                         <h2 className="text-2xl font-bold text-gray-800">Order Details</h2>
                         <div className="bg-blue-100 text-blue-800 px-3 py-1 truncate rounded-full text-sm font-medium">
-                            {order.channel || 'Unknown Channel'}
+                            {order[0]?.channel_name || 'Unknown Channel'}
                         </div>
                     </div>
 
@@ -248,7 +255,9 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-sm text-gray-500">Tracking ID</p>
-                                        <p className="font-medium text-blue-600">{order.shipment_tracker || 'N/A'}</p>
+                                        <p className="font-medium text-blue-600">{order[0]?.shipment_tracker || 'N/A'}</p>
+                                        <p className="text-sm text-gray-500">Courrier</p>
+                                        <p className="font-medium text-blue-600">{order[0]?.shipping_company || 'N/A'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -269,17 +278,17 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {/* {order?.map((item, index) => (
+                                    {order.length > 0 && order?.map((item, index) => (
                                         <tr key={index} className="hover:bg-gray-50">
                                             <td className="px-6 py-4">
                                                 <div className="font-medium text-gray-900">
-                                                    {item.sku_code || 'N/A'}
+                                                    {item?.product_sku_code || 'N/A'}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-gray-900 text-xl">{item.qty || '0'}</td>
+                                            <td className="px-6 py-4 text-gray-900 text-xl">{item?.qty || '0'}</td>
                                         </tr>
-                                    ))} */}
-                                    {order.product_sku_code}
+                                    ))}
+
                                 </tbody>
                             </table>
                         </div>
