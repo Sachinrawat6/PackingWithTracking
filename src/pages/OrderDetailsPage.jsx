@@ -104,6 +104,7 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                         shipment_tracker: cleanedTrackingId,
                         courrier: "NA",
                         order_items: [],
+                        qty: 1,
                         timestamp: Date.now()
                     };
                     saveToLocalStorage([dummyOrder]);
@@ -123,6 +124,7 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                     const dummyOrder = {
                         shipment_tracker: cleanedTrackingId,
                         courrier: "NA",
+                        qty: 1,
                         order_items: [],
                         timestamp: Date.now()
                     };
