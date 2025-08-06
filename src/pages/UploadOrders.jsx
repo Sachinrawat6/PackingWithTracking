@@ -82,8 +82,8 @@ const OrderCSVUpload = () => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-            <div className="mb-6">
+        <div className="max-w-3xl mx-auto relative top-30 p-10  bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="mb-6 ">
                 <h2 className="text-2xl font-bold text-gray-800 mb-1">
                     Order <span className="text-red-600">CSV</span> Upload
                 </h2>

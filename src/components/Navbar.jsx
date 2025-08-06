@@ -9,7 +9,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.isAuthenticated);
+  const user = useSelector((state) => state.user);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -17,6 +17,7 @@ const Navbar = () => {
   }, [location]);
 
   console.log(user);
+
   // Add scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -32,7 +33,7 @@ const Navbar = () => {
   };
 
   // Nav items configuration
-  const navItems = user
+  const navItems = user.isAuthenticated && user?.user?.email
     ? [
       { path: "/upload", name: "Upload" },
       { path: "/packing", name: "Packing" },
@@ -76,7 +77,7 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            {user && (
+            {user?.isAuthenticated && user?.user?.email && (
               <button
                 onClick={handleLogout}
                 className="ml-4 px-4 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200 flex items-center"
@@ -155,7 +156,7 @@ const Navbar = () => {
               {item.name}
             </Link>
           ))}
-          {user && (
+          {user?.isAuthenticated && (
             <button
               onClick={handleLogout}
               className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 flex items-center"
