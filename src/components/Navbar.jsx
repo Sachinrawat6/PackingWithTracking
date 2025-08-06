@@ -9,13 +9,14 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user);
+  const user = useSelector((state) => state.user.isAuthenticated);
 
   // Close mobile menu when route changes
   useEffect(() => {
     setOpen(false);
   }, [location]);
 
+  console.log(user);
   // Add scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -68,8 +69,8 @@ const Navbar = () => {
                 key={item.path}
                 to={item.path}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${location.pathname === item.path
-                    ? "bg-red-600 text-white"
-                    : "text-gray-300 hover:text-white hover:bg-gray-800"
+                  ? "bg-red-600 text-white"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800"
                   }`}
               >
                 {item.name}
@@ -147,8 +148,8 @@ const Navbar = () => {
               key={item.path}
               to={item.path}
               className={`block px-3 py-2 rounded-md text-base font-medium ${location.pathname === item.path
-                  ? "bg-red-600 text-white"
-                  : "text-gray-300 hover:text-white hover:bg-gray-800"
+                ? "bg-red-600 text-white"
+                : "text-gray-300 hover:text-white hover:bg-gray-800"
                 }`}
             >
               {item.name}

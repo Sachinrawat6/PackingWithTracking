@@ -7,7 +7,7 @@ const PackingPage = () => {
   const trackingRef = useRef(null);
 
   return (
-    <div className='container mx-auto p-4 gap-4 mt-4'>
+    <div className='container mx-auto p-4 gap-4 py-20'>
       <div>
         <h2 className='text-xl font-semibold text-gray-700 mb-4'>Order Packing</h2>
         <input

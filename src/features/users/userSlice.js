@@ -5,7 +5,7 @@ const initialUser = storedUser ? JSON.parse(storedUser) : [];
 
 const initialState = {
     user: initialUser,
-    isAuthenticated: !!initialUser,
+    isAuthenticated: !initialUser,
     loading: false,
     error: null,
 };
