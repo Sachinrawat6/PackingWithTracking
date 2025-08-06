@@ -99,6 +99,9 @@ const Navbar = () => {
                 Logout
               </button>
             )}
+            <div className="flex  w-12 overflow-hidden bg-white py-2 h-12 justify-center items-center rounded-full">
+              <p className="text-red-500 uppercase  font-extrabold text-3xl">{user?.user?.username ? `${user.user.username[0]}` : ""}</p>
+            </div>
           </div>
 
           {/* Mobile menu button */}
