@@ -10,6 +10,7 @@ import Orders from './pages/Orders'
 import PrivateRoute from './components/PrivateRoute'
 import Register from './components/Register'
 import Login from './components/Login'
+import Tag from './pages/Tag'
 
 
 
@@ -28,6 +29,7 @@ const App = () => {
           <Route path="/orders" element={<Orders />} />
           <Route path="/manifest" element={<Manifest />} />
           <Route path="/upload" element={<UploadOrders />} />
+          <Route path='/tag' element={<Tag />} />
         </Route>
       </Routes>
     </BrowserRouter>

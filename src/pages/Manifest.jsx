@@ -23,6 +23,8 @@ const Manifest = () => {
     const [endTimeHour, setEndTimeHour] = useState(23);
     const [endTimeMinute, setEndTimeMinute] = useState(59);
 
+
+
     const fetchManifest = async (page = 1) => {
         setLoading(true);
         try {
@@ -54,6 +56,7 @@ const Manifest = () => {
 
             const response = await axios.request(options);
             setManifest(response.data.list);
+            console.log(response.data.list)
             setTotalRecords(response.data.pageInfo.totalRows || response.data.list.length);
         } catch (error) {
             setError("Failed to fetch Manifest");
@@ -62,6 +65,8 @@ const Manifest = () => {
             setLoading(false);
         }
     };
+
+
 
     useEffect(() => {
         fetchManifest(currentPage);
@@ -91,27 +96,73 @@ const Manifest = () => {
             }
 
             // Apply courier filter if selected
+            // if (courrier) {
+            //     const courierMapping = {
+            //         bluedart: ['BD_CP', 'BLUEDART'],
+            //         delhivery: ['DELHIVERY', 'Delhivery', 'DelhiverySurface'],
+            //         shadowfax: ['SF', "Shadowfax"],
+            //         xpressbees: ['XC', 'XPRESSBEES', '141'],
+            //         ecom: ['725'],
+            //         dtdc: ['7X'],
+            //         ekart: ['EK_CP'],
+            //         shipdelight: [],
+            //     };
+
+            //     const trackingIdMapping = {
+            //         xpressbees: ['141']
+            //     }
+
+            //     const prefixes = courierMapping[courrier.toLowerCase()] || [];
+            //     const tracking_id_prefixes = trackingIdMapping[courrier.toLowerCase()] || [];
+
+            //     filtered = filtered.filter(order => {
+            //         if (!order.courrier) return false;
+            //         const orderCourier = order.courrier.toString().toLowerCase();
+            //         const tracking_id_mapping = order.tracking_id.toString();
+            //         console.log("tracking id mapping ", tracking_id_mapping)
+            //         return prefixes.some(prefix =>
+            //             orderCourier.startsWith(prefix.toLowerCase())
+            //         ) || tracking_id_prefixes.some(prefix => tracking_id_mapping.startsWith(prefix.toString()));
+            //     });
+            // }
             if (courrier) {
                 const courierMapping = {
                     bluedart: ['BD_CP', 'BLUEDART'],
                     delhivery: ['DELHIVERY', 'Delhivery', 'DelhiverySurface'],
-                    shadowfax: ['SF', "Shadowfax"],
-                    xpressbees: ['XC', 'XPRESSBEES'],
+                    shadowfax: ['SF', 'Shadowfax'],
+                    xpressbees: ['XC', 'XPRESSBEES', '141'],
                     ecom: ['725'],
                     dtdc: ['7X'],
                     ekart: ['EK_CP'],
                     shipdelight: [],
                 };
 
+                const trackingIdMapping = {
+                    xpressbees: ['141'] // tracking_id prefix for Xpressbees
+                };
+
                 const prefixes = courierMapping[courrier.toLowerCase()] || [];
+                const trackingPrefixes = trackingIdMapping[courrier.toLowerCase()] || [];
+
                 filtered = filtered.filter(order => {
-                    if (!order.courrier) return false;
-                    const orderCourier = order.courrier.toString().toLowerCase();
-                    return prefixes.some(prefix =>
+                    if (!order.courrier && !order.tracking_id) return false;
+
+                    const orderCourier = order.courrier ? order.courrier.toString().toLowerCase() : '';
+                    const trackingId = order.tracking_id ? order.tracking_id.toString() : '';
+
+                    const courierMatch = prefixes.some(prefix =>
                         orderCourier.startsWith(prefix.toLowerCase())
                     );
+
+                    const trackingMatch = trackingPrefixes.some(prefix =>
+                        trackingId.startsWith(prefix.toString())
+                    );
+
+                    return courierMatch || trackingMatch;
                 });
             }
+
+
 
             setFilteredManifest(filtered);
             setTotalRecords(filtered.length);
@@ -211,7 +262,7 @@ const Manifest = () => {
     const exportToPDF = () => {
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-        const title = `${courrier} Manifest - ${selectedStartDate} ${startTimeHour}:${startTimeMinute.toString().padStart(2, '0')} to ${selectedEndDate} ${endTimeHour}:${endTimeMinute.toString().padStart(2, '0')}`;
+        const title = `${courrier} Manifest `;
         doc.setFontSize(16);
         doc.text(title, 14, 20);
 
@@ -219,15 +270,19 @@ const Manifest = () => {
             bluedart: ['BD_CP', 'BLUEDART'],
             delhivery: ['DELHIVERY', 'Delhivery', 'DelhiverySurface'],
             shadowfax: ['SF', "Shadowfax"],
-            xpressbees: ['XC', 'XPRESSBEES'],
+            xpressbees: ['XC', 'XPRESSBEES', '141'],
             ecom: ['725'],
             dtdc: ['7X'],
             ekart: ['EK_CP'],
             shipdelight: [],
         };
+        const trackingIdMapping = {
+            xpressbees: ['141'] // tracking_id prefix for Xpressbees
+        };
 
         const currentCourier = courrier?.toLowerCase();
         const prefixes = courierMapping[currentCourier] || [];
+
 
         const headers = [['Sr. No.', 'Tracking ID', 'Date']];
         const tableData = filteredManifest
@@ -278,6 +333,9 @@ const Manifest = () => {
 
         doc.save(`manifest_${selectedStartDate}_${startTimeHour}-${startTimeMinute}_to_${selectedEndDate}_${endTimeHour}-${endTimeMinute}.pdf`);
     };
+
+
+
 
     if (loading) {
         return (
