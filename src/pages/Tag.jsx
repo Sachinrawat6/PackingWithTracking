@@ -135,6 +135,13 @@ const Tag = () => {
         writeFile(wb, `Qurvii_Labels_${new Date().toISOString().split('T')[0]}.csv`);
     };
 
+    const handleDelete = () => {
+        const confirmation = window.confirm("Are you sure want to delete all records?");
+        if (!confirmation) return
+        localStorage.removeItem("order");
+        window.location.reload();
+    }
+
     return (
         <div className='py-20 container mx-auto px-4'>
             <h2 className='text-red-500 font-medium text-xl'>Tag Generation</h2>
@@ -153,7 +160,7 @@ const Tag = () => {
                 <div className="flex gap-2 mt-2">
                     <button
                         type="submit"
-                        className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+                        className="bg-black text-white py-2 px-4 rounded hover:bg-gray-700"
                         disabled={loading}
                     >
                         {loading ? 'Searching...' : 'Search'}
@@ -165,6 +172,14 @@ const Tag = () => {
                         disabled={localstorageData.length === 0}
                     >
                         Export CSV
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+                        disabled={localstorageData.length === 0}
+                    >
+                        Delete All
                     </button>
                 </div>
             </form>
