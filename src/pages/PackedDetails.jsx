@@ -77,8 +77,8 @@ const PackedDetails = () => {
             </div>
             <div className='flex justify-between px-4 items-center'>
 
-                <h2 className="py-3 px-6  font-medium text-gray-700 text-lg">
-                    Packed Orders
+                <h2 className="py-3 px-6  font-medium text-gray-700 text-lg mb-2">
+                    Packed Orders Quantity : <span className='text-2xl text-red-500 rounded-full border-1 w-20 h-20 py-2 px-4'>{orders?.length}  </span> <span></span>
                 </h2>
                 <button
                     onClick={handleSaveManifest}
