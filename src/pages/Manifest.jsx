@@ -25,39 +25,115 @@ const Manifest = () => {
 
 
 
-    const fetchManifest = async (page = 1) => {
+    // const fetchManifest = async (page = 1) => {
+    //     setLoading(true);
+    //     try {
+    //         const offset = (page - 1) * limit;
+
+    //         // Build the where condition based on date range only
+    //         let whereCondition = '';
+    //         if (selectedStartDate && selectedEndDate) {
+    //             whereCondition = `((timestamp,gt,exactDate,${selectedStartDate})~and(timestamp,lt,exactDate,${selectedEndDate}))~or(timestamp,eq,exactDate,${selectedEndDate})`;
+    //         } else if (selectedStartDate) {
+    //             whereCondition = `(timestamp,gt,exactDate,${selectedStartDate})`;
+    //         } else if (selectedEndDate) {
+    //             whereCondition = `(timestamp,lt,exactDate,${selectedEndDate})`;
+    //         }
+
+    //         const options = {
+    //             method: 'GET',
+    //             url: 'https://app.nocodb.com/api/v2/tables/m6785gjdnn9qz5j/records',
+    //             params: {
+    //                 offset: offset.toString(),
+    //                 limit: limit.toString(),
+    //                 ...(whereCondition && { where: whereCondition }),
+    //                 viewId: 'vw0p89q3ab1do9tk'
+    //             },
+    //             headers: {
+    //                 'xc-token': '-0XAccEvsn8koGW5MKQ79LoPj07lxk_1ldqDmuv1'
+    //             }
+    //         };
+
+    //         const response = await axios.request(options);
+    //         setManifest(response.data.list);
+    //         console.log(response.data.list)
+    //         setTotalRecords(response.data.pageInfo.totalRows || response.data.list.length);
+    //     } catch (error) {
+    //         setError("Failed to fetch Manifest");
+    //         console.error("API Error:", error);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+    const fetchManifest = async () => {
         setLoading(true);
         try {
-            const offset = (page - 1) * limit;
+            let allRecords = [];
+            let page = 1;
+            let totalPages = 1; // default
+            const limitPerPage = limit; // your existing limit
 
             // Build the where condition based on date range only
+            // let whereCondition = '';
+            // if (selectedStartDate && selectedEndDate) {
+            //     whereCondition = `((timestamp,gt,exactDate,${selectedStartDate})~and(timestamp,lt,exactDate,${selectedEndDate}))~or(timestamp,eq,exactDate,${selectedEndDate})`;
+            // } else if (selectedStartDate  ) {
+            //     whereCondition = `(timestamp,gt,exactDate,${selectedStartDate})`;
+            // } else if (selectedEndDate) {
+            //     whereCondition = `(timestamp,lt,exactDate,${selectedEndDate})`;
+            // }
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date().toISOString().split("T")[0];
+
+            // If no dates selected, default them to today
+            const startDate = selectedStartDate || today;
+            const endDate = selectedEndDate || today;
+
             let whereCondition = '';
-            if (selectedStartDate && selectedEndDate) {
-                whereCondition = `((timestamp,gt,exactDate,${selectedStartDate})~and(timestamp,lt,exactDate,${selectedEndDate}))~or(timestamp,eq,exactDate,${selectedEndDate})`;
-            } else if (selectedStartDate) {
-                whereCondition = `(timestamp,gt,exactDate,${selectedStartDate})`;
-            } else if (selectedEndDate) {
-                whereCondition = `(timestamp,lt,exactDate,${selectedEndDate})`;
+            if (startDate && endDate) {
+                whereCondition = `((timestamp,gt,exactDate,${startDate})~and(timestamp,lt,exactDate,${endDate}))~or(timestamp,eq,exactDate,${endDate})`;
+            } else if (startDate) {
+                whereCondition = `(timestamp,gt,exactDate,${startDate})`;
+            } else if (endDate) {
+                whereCondition = `(timestamp,lt,exactDate,${endDate})`;
             }
 
-            const options = {
-                method: 'GET',
-                url: 'https://app.nocodb.com/api/v2/tables/m6785gjdnn9qz5j/records',
-                params: {
-                    offset: offset.toString(),
-                    limit: limit.toString(),
-                    ...(whereCondition && { where: whereCondition }),
-                    viewId: 'vw0p89q3ab1do9tk'
-                },
-                headers: {
-                    'xc-token': '-0XAccEvsn8koGW5MKQ79LoPj07lxk_1ldqDmuv1'
-                }
-            };
 
-            const response = await axios.request(options);
-            setManifest(response.data.list);
-            console.log(response.data.list)
-            setTotalRecords(response.data.pageInfo.totalRows || response.data.list.length);
+
+            do {
+                const offset = (page - 1) * limitPerPage;
+
+                const options = {
+                    method: 'GET',
+                    url: 'https://app.nocodb.com/api/v2/tables/m6785gjdnn9qz5j/records',
+                    params: {
+                        offset: offset.toString(),
+                        limit: limitPerPage.toString(),
+                        ...(whereCondition && { where: whereCondition }),
+                        viewId: 'vw0p89q3ab1do9tk'
+                    },
+                    headers: {
+                        'xc-token': '-0XAccEvsn8koGW5MKQ79LoPj07lxk_1ldqDmuv1'
+                    }
+                };
+
+                const response = await axios.request(options);
+
+                // Push records into allRecords array
+                allRecords = [...allRecords, ...response.data.list];
+
+                // Calculate total pages
+                totalPages = Math.ceil(
+                    (response.data.pageInfo.totalRows || 0) / limitPerPage
+                );
+
+                page++; // Move to next page
+            } while (page <= totalPages);
+
+            // Set all fetched records
+            setManifest(allRecords);
+            setTotalRecords(allRecords.length);
+            console.log("Fetched Records:", allRecords);
         } catch (error) {
             setError("Failed to fetch Manifest");
             console.error("API Error:", error);
