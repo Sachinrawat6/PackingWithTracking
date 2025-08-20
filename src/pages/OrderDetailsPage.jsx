@@ -66,7 +66,7 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                 existingOrders.push(minimalOrderData);
             }
 
-            localStorage.setItem("orders", JSON.stringify(existingOrders.slice(-50)));
+            localStorage.setItem("orders", JSON.stringify(existingOrders.slice(-200)));
         } catch (error) {
             console.error("Error saving to localStorage:", error);
         }
@@ -96,7 +96,8 @@ const OrderDetailsPage = ({ trackingId: initialTrackingId, trackingRef }) => {
                 `https://inventorybackend-m1z8.onrender.com/api/v1/oms/orders/shipment_tracker/${cleanedTrackingId}`
             );
             const data = await response.json();
-            if (!response.ok || data.data.length === 0) {
+            // if (!response.ok || data.data.length === 2) {
+            if (!response.ok || data.data.length === 2) {
                 const shouldSave = window.confirm("Order not found. Do you want to add this tracking ID to the manifest?");
 
                 if (shouldSave) {

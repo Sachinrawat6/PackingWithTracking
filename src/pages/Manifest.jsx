@@ -209,12 +209,17 @@ const Manifest = () => {
                     xpressbees: ['XC', 'XPRESSBEES', '141'],
                     ecom: ['725'],
                     dtdc: ['7X'],
-                    ekart: ['EK_CP'],
+                    ekart: ['EK_CP', 'CLS', 'MYEP'],
                     shipdelight: [],
                 };
 
                 const trackingIdMapping = {
-                    xpressbees: ['141'] // tracking_id prefix for Xpressbees
+                    xpressbees: ['141'], // tracking_id prefix for Xpressbees
+                    dtdc: ['7x10', '7X10'],
+                    bluedart: ['7797', '7654'],
+                    delhivery: ['1785'],
+
+
                 };
 
                 const prefixes = courierMapping[courrier.toLowerCase()] || [];
@@ -335,6 +340,81 @@ const Manifest = () => {
         writeFile(wb, `manifest_${selectedStartDate}_to_${selectedEndDate}.csv`);
     };
 
+    // const exportToPDF = () => {
+    //     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    //     const title = `${courrier} Manifest `;
+    //     doc.setFontSize(16);
+    //     doc.text(title, 14, 20);
+
+    //     const courierMapping = {
+    //         bluedart: ['BD_CP', 'BLUEDART'],
+    //         delhivery: ['DELHIVERY', 'Delhivery', 'DelhiverySurface'],
+    //         shadowfax: ['SF', "Shadowfax"],
+    //         xpressbees: ['XC', 'XPRESSBEES', '141'],
+    //         ecom: ['725'],
+    //         dtdc: ['7X'],
+    //         ekart: ['EK_CP'],
+    //         shipdelight: [],
+    //     };
+    //     const trackingIdMapping = {
+    //         xpressbees: ['141'] // tracking_id prefix for Xpressbees
+    //     };
+
+    //     const currentCourier = courrier?.toLowerCase();
+    //     const prefixes = courierMapping[currentCourier] || [];
+
+
+    //     const headers = [['Sr. No.', 'Tracking ID', 'Date']];
+    //     const tableData = filteredManifest
+    //         .filter((o) => {
+    //             if (!o.tracking_id) return false;
+    //             const orderCourier = o.courrier?.toString().toLowerCase();
+    //             return prefixes.some(prefix => orderCourier?.startsWith(prefix?.toLowerCase()));
+    //         })
+    //         .map((item, index) => [
+    //             index + 1,
+    //             item.tracking_id || 'N/A',
+    //             new Date(item.timestamp).toLocaleString('en-IN', {
+    //                 year: 'numeric',
+    //                 month: 'short',
+    //                 day: '2-digit',
+    //                 hour: '2-digit',
+    //                 minute: '2-digit',
+    //             })
+    //         ]);
+
+    //     if (tableData.length === 0) {
+    //         alert(`No data found for ${courrier} Manifest.`);
+    //         return;
+    //     }
+
+    //     autoTable(doc, {
+    //         head: headers,
+    //         body: tableData,
+    //         startY: 30,
+    //         margin: { top: 20, left: 10, right: 10 },
+    //         styles: {
+    //             cellPadding: 3,
+    //             fontSize: 10,
+    //             halign: 'center',
+    //             valign: 'middle'
+    //         },
+    //         headStyles: {
+    //             fillColor: [41, 128, 185],
+    //             textColor: 255,
+    //             fontStyle: 'bold'
+    //         },
+    //         columnStyles: {
+    //             0: { cellWidth: 20 },
+    //             1: { cellWidth: 80 },
+    //             2: { cellWidth: 80 }
+    //         },
+    //     });
+
+    //     doc.save(`manifest_${selectedStartDate}_${startTimeHour}-${startTimeMinute}_to_${selectedEndDate}_${endTimeHour}-${endTimeMinute}.pdf`);
+    // };
+
     const exportToPDF = () => {
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
@@ -349,23 +429,40 @@ const Manifest = () => {
             xpressbees: ['XC', 'XPRESSBEES', '141'],
             ecom: ['725'],
             dtdc: ['7X'],
-            ekart: ['EK_CP'],
+            ekart: ['EK_CP', 'CLS', 'MYEP'],
             shipdelight: [],
         };
+
         const trackingIdMapping = {
-            xpressbees: ['141'] // tracking_id prefix for Xpressbees
+            xpressbees: ['141'],
+            dtdc: ['7x10', '7X10'],
+            bluedart: ['7797', '7654'],
+            delhivery: ['1785'],
         };
 
         const currentCourier = courrier?.toLowerCase();
         const prefixes = courierMapping[currentCourier] || [];
-
+        const trackingPrefixes = trackingIdMapping[currentCourier] || [];
 
         const headers = [['Sr. No.', 'Tracking ID', 'Date']];
+
+        // Use the same filtering logic as in useEffect
         const tableData = filteredManifest
-            .filter((o) => {
-                if (!o.tracking_id) return false;
-                const orderCourier = o.courrier?.toString().toLowerCase();
-                return prefixes.some(prefix => orderCourier?.startsWith(prefix?.toLowerCase()));
+            .filter((order) => {
+                if (!order.courrier && !order.tracking_id) return false;
+
+                const orderCourier = order.courrier ? order.courrier.toString().toLowerCase() : '';
+                const trackingId = order.tracking_id ? order.tracking_id.toString() : '';
+
+                const courierMatch = prefixes.some(prefix =>
+                    orderCourier.startsWith(prefix.toLowerCase())
+                );
+
+                const trackingMatch = trackingPrefixes.some(prefix =>
+                    trackingId.startsWith(prefix.toString())
+                );
+
+                return courierMatch || trackingMatch;
             })
             .map((item, index) => [
                 index + 1,
